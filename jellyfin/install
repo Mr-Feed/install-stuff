@@ -1,0 +1,48 @@
+# Install Jellyfin
+
+1. Bereite den Reverse Proxy vor. Solltest du das schon gemacht haben oder etwas andere nutzt (z.B. traefik) kannst du direkt mit dem nächsten schritt fortfahren.
+
+Kopiere die jellyfin-apache.conf in /etc/apache/sites-available/
+
+Starte den reverse proxy neu.
+
+systemctl restart apache2
+
+Damit du auch ein zertifikat für deine seite bekommst ist es notwendig, eine domain bzw. eine subdomain auf den server zeigen zu lassen. gehe dazu in die oberfläche deines anbieters.
+
+Bei Bero-Host kannst du einfach in deine produktübersicht, zu deiner domain und in deine dns einstellungen. dort gibst du die ip des servers an.
+
+Bedenke, dass dies etwas zeit in anspruch nehmen kann.
+
+führe nun den certbot mit dem befehl certbot aus.
+
+
+2. Kopiere die docker-compose.yml in ein Verzeichnis. zB. /srv/jellyfin
+
+services:   -> in dieser sektion befinden sich alle services die in der docker compose file verwaltet werden
+    jellyfin: -> name der app. im fall von docker ist das auch ein dns name und kann von anderen containern im gleichen netzwerk über diesen namen erreicht werden.
+      restart: unless-stopped -> restart policy wenn der container abstürzt oder sich beendet.
+      image: jellyfin/jellyfin -> image das verwendet wird
+      container_name: jellyfin -> name des containers. jeder container name kann auf dem gleichern server nur einmal verwendet werden.
+      ports: -> hier werden alle ports weiterleitungen verwaltet. links steht der port am host und rechts der port am container.
+        - "127.0.0.1:8000:8096" -> gibt man vor dem ersten port eine ip-addresse (hier z.B. die localhost addresse) hat man nur von dieser ip adresse aus zugriff. will man von außen auf den server kann man die ip adresse weglassen. in unserem fall sprechen wir jellyfin über einen reverse-proxy an (der das zertifikat verwaltet) und daher lassen wir nur zugriff vom eigenen server zu.
+      volumes: -> hier werden volumes verwaltet die persistent sein sollen. hier sind vorallem der mount für config und media notwendig. 
+        - "./cache:/cache"
+        - "./config:/config" -> beinhaltet die config und sorgt dafür, dass nach einer neuerstellung des containers alles noch da ist.
+        - "./transcodes:/config/transcodes"
+        - "./media:/media" -> hier liegen die filme/mp3 files.
+
+
+3. Starte den Docker Container
+
+gebe den befehl docker compose up -d ein. mit docker ps solltest du nun deinen container sehen.
+
+4. Einrichtung von Jellyfin
+
+Wenn deine Domain fertig ist und dein container läuft solltest du nun auf deinen domain namen kommen und kannst mit der einrichtung fortfahren. du kannst bibiliotheken für deine medien erstellen.
+
+für mehr tipps schaue auf https://jellyfin.org/docs/general/server/media/movies wie du deine filme und serien bennenen kannst.
+
+5. Updates 
+
+um jellyfin zu updaten kannst du im verzeichnis einfach den befehl docker compose pull eingeben und es wird automatisch die neuste version von jellyfin heruntergeladen.

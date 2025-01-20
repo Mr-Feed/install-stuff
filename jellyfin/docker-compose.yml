@@ -1,0 +1,12 @@
+services:
+    jellyfin:
+      restart: unless-stopped
+      image: jellyfin/jellyfin
+      container_name: jellyfin
+      ports:
+        - "127.0.0.1:8000:8096"
+      volumes:
+        - "./cache:/cache"
+        - "./config:/config"
+        - "./transcodes:/config/transcodes"
+        - "./media:/media"

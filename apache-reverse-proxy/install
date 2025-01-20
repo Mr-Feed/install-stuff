@@ -1,0 +1,11 @@
+1. Installiere den apache 
+
+apt install apache2 certbot python3-certbot-apache
+
+2. aktiviere die notwendigen mods
+
+a2enmod proxy proxy_http headers
+
+3. starte den apache neu
+
+systemctl restart apache2
